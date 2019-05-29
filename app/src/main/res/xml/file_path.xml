@@ -4,5 +4,8 @@
         <external-path
             name="download"
             path=""/>
+        <external-path
+            name="external_storage_root"
+            path="." />
     </paths>
 </resources>

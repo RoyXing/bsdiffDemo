@@ -1,5 +1,6 @@
 package com.xingzy;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -26,11 +27,11 @@ public class MainActivity extends AppCompatActivity {
 
         // Example of a call to a native method
         TextView tv = findViewById(R.id.sample_text);
-        tv.setText(BuildConfig.VERSION_NAME);
+        tv.setText("我是新版本" + BuildConfig.VERSION_NAME);
     }
 
     public void update(View view) {
-        new AsyncTask<Void, Void, File>() {
+        @SuppressLint("StaticFieldLeak") AsyncTask<Void, Void, File> asyncTask = new AsyncTask<Void, Void, File>() {
 
             @Override
             protected File doInBackground(Void... voids) {
@@ -45,19 +46,24 @@ public class MainActivity extends AppCompatActivity {
             protected void onPostExecute(File file) {
                 super.onPostExecute(file);
                 if (file != null) {
-                    if (!file.exists()) return;
+                    if (!file.exists()) {
+                        return;
+                    }
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        Uri fileUri = FileProvider.getUriForFile(MainActivity.this, MainActivity.this.getApplicationInfo().packageName, file);
+                        Uri fileUri = FileProvider.getUriForFile(MainActivity.this, "com.xingzy.fileprovider", file);
                         intent.setDataAndType(fileUri, "application/vnd.android.package-archive");
                     } else {
                         intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
                     }
+                    startActivity(intent);
                 }
             }
         };
+        asyncTask.execute();
     }
 
     private File createNewApk() {
